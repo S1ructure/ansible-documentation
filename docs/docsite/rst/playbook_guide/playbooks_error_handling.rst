@@ -136,6 +136,29 @@ If you have too many conditions to fit neatly into one line, you can split it in
         (ret.stderr != '') or
         (ret.rc == 10)
 
+If you want to introduce your own variables, to avoid repeating a certain term, you can simply reference them in your conditionals
+
+-- code-block:: yaml
+
+  - name: Example playbook
+    hosts: myHosts
+    vars:
+       log_path: /home/ansible/logfolder/
+       log_file: log.log
+
+   tasks:
+      - name: Create empty log file
+       ansible.builtin.shell: mkdir {{ log_path }} || touch {{log_path }}{{ log_file }}
+       register: tmp
+       changed_when:
+         - tmp.rc == 0
+         - 'tmp.stderr != "mkdir: cannot create directory ‘" ~ log_path ~ "’: File exists"'
+
+-- note::
+   Notice the missing ``{{ }}`` around log_path. Conditionals are already executed in a templating context, which makes the ``{{ }}`` superflous.
+
+   If you still use ansible will raise a warning ``[WARNING]: conditional statements should not include jinja2 templating delimiters such as {{ }} or {% %}.``   
+
 .. _override_the_changed_result:
 
 Defining "changed"
